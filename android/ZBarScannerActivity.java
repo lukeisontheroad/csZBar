@@ -383,26 +383,34 @@ implements SurfaceHolder.Callback {
     private PreviewCallback previewCb = new PreviewCallback()
     {
         public void onPreviewFrame(byte[] data, Camera camera) {
-            Camera.Parameters parameters = camera.getParameters();
-            Camera.Size size = parameters.getPreviewSize();
+            try {
+                Camera.Parameters parameters = camera.getParameters();
+                Camera.Size size = parameters.getPreviewSize();
 
-            Image barcode = new Image(size.width, size.height, "Y800");
-            barcode.setData(data);
+                Image barcode = new Image(size.width, size.height, "Y800");
+                barcode.setData(data);
 
-            if (scanner.scanImage(barcode) != 0) {
-                String qrValue = "";
+                if (scanner.scanImage(barcode) != 0) {
+                    String qrValue = "";
 
-                SymbolSet syms = scanner.getResults();
-                for (Symbol sym : syms) {
-                    qrValue = sym.getData();
+                    SymbolSet syms = scanner.getResults();
+                    for (Symbol sym : syms) {
+                        qrValue = sym.getData();
 
-                    // Return 1st found QR code value to the calling Activity.
-                    Intent result = new Intent ();
-                    result.putExtra(EXTRA_QRVALUE, qrValue);
-                    setResult(Activity.RESULT_OK, result);
-                    finish();
+                        // Return 1st found QR code value to the calling Activity.
+                        Intent result = new Intent();
+                        result.putExtra(EXTRA_QRVALUE, qrValue);
+                        setResult(Activity.RESULT_OK, result);
+                        finish();
+                    }
+
                 }
-
+            }catch (RuntimeException e){
+                // Return dummy result to prevent crash
+                Intent result = new Intent();
+                result.putExtra(EXTRA_QRVALUE, "CAMERA_ERROR");
+                setResult(Activity.RESULT_OK, result);
+                finish();
             }
         }
     };
